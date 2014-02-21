@@ -1,0 +1,38 @@
+(defproject gauguin "0.1.0-SNAPSHOT"
+
+  :description "bookmark app"
+
+  :url "http://example.com/FIXME"
+
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+
+  :min-lein-version "2.0.0"
+
+  :source-paths ["src/cljs" "src/clj"]
+
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.clojure/clojurescript "0.0-2156"]
+                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                 [ring "1.2.1"]
+                 [enlive "1.1.5"]
+                 [compojure "1.1.6"]
+                 [om "0.3.6"]
+                 [com.facebook/react "0.8.0.1"]
+                 [hiccups "0.3.0"]
+                 [net.drib/strokes "0.5.0"]]
+
+  :plugins [[lein-cljsbuild "1.0.1"]
+            [com.cemerick/austin "0.1.3"]
+            [lein-ancient "0.5.4"]]
+
+  :repl-options {:init-ns gauguin.core}
+
+  ;;:hooks [leiningen.cljsbuild]
+
+  :cljsbuild
+  {:builds
+   [{:source-paths ["src/cljs"]
+     :compiler
+     {:output-to "resources/public/js/main.js"
+      :optimizations :simple}}]})
