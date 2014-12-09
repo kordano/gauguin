@@ -1,97 +1,54 @@
 (ns gauguin.client
-  (:require [hiccups.runtime :as hiccupsrt]
-            [clojure.browser.repl]
-            [cljs.core.async :refer [put! chan <! timeout]]
-            [strokes :refer [d3]])
-  (:require-macros [hiccups.core :as hiccups]
-                   [cljs.core.async.macros :refer [go]]))
-
-(.log js/console "HAIL TO THE LAMBDA!")
-
-
-
-;; fire up repl
-#_(do
-    (def repl-env (reset! cemerick.austin.repls/browser-repl-env
-                         (cemerick.austin/repl-env)))
-    (cemerick.austin.repls/cljs-repl repl-env))
+  (:require [strokes :refer [d3]]))
 
 (strokes/bootstrap)
 
-(def data [63 39 31 53 25 32 175 69 51])
+; 26 characters in a vec
+(def alphabet (vec "abcdefghijklmnopqrstuwvxyz"))
 
-(def margin {:top 50 :right 40 :bottom 50 :left 40})
-(def width (- 960 (margin :left) (margin :right)))
-(def height (- 500  (margin :top) (margin :bottom)))
+(def width 960)
+(def height 500)
 
-; x is a fn: data ↦ width
-(def x
-  (-> d3
-      .-scale
-      (.ordinal)
-      (.domain (vec (range (count data))))
-      (.rangeRoundBands [0 width] 0.2)))
+(def svg (-> d3 (.select "body") (.append "svg")
+      (.attr {:width width :height height})
+    (.append "g")
+      (.attr {:transform (str "translate(32," (/ height 2) ")")})))
 
-; y is a fn: index ↦ y
-(def y
-  (-> d3
-      .-scale
-      (.linear)
-      (.domain [(apply max data) 0])
-      (.range [height 0])))
+(defn update [data]
+  ; DATA JOIN
+  ; Join new data with old elements, if any.
+  (let [text (-> svg (.selectAll "text") (.data data))]
+    ; UPDATE
+    ; Update old elements as needed
+    (-> text (.attr {:class "update"}))
 
+    ; ENTER
+    ; Create new elments as needed
+    (-> text (.enter) (.append "text")
+      (.attr {:class "enter"
+              :x     #(* %2 32)
+              :dy    ".35em"}))
 
-(def svg2
-  (-> d3
-      (.select "body")
-      (.append "svg")
-      (.attr {:width  (+ width (margin :left) (margin :right))
-              :height (+ height (margin :top) (margin :bottom))})
-      (.append "g")
-      (.attr {:transform (str "translate(" (margin :left) "," (margin :top) ")")})))
+    ; ENTER + UPDATE
+    ; Appending to the enter selection expands the update selection to include
+    ; entering elements; so, operations on the update selection after appending to
+    ; the enter selection will apply to both entering and updating nodes.
+    (-> text (.text identity))
 
+    ; EXIT
+    ; Remove old elements as needed.
+    (-> text (.exit) (.remove))))
 
-; Data ↦ Element
-(def bar2
-  (-> svg2
-      (.selectAll "g.bar")
-      (.data data)
-      (.enter)
-      (.append "g")
-      (.attr {:class "bar"
-              :transform #(str "translate(" (x %1) "," (- height  (y (data %2))) ")" )})
-      (.style {:fill "steelblue"})))
+; The initial display - all letters
+(update alphabet)
 
-
-; Data Attributes ↦ Element Attributes
-(-> bar2
-    (.append "rect")
-    (.attr {:height  #(y %)
-            :width (.rangeBand x)}))
-
-
-; Data Attributes ↦ Element Attributes
-#_(-> bar2
-    (.append "text")
-    (.attr {:x  x
-            :y  (/ (.rangeBand y) 2)
-            :dx -6
-            :dy ".35em"
-            :text-anchor "end"})
-    (.style "fill" "white")
-    (.text identity))
-
-#_(-> d3
-    (.select "svg")
-    (.selectAll "g.bar")
-    (.style {:fill "steelblue"}))
-
-
-#_ (go
-  (while true
-    (<! (timeout 1000))
-    (draw-bar "green")
-    (<! (timeout 1000))
-    (draw-bar "red")
-    (<! (timeout 1000))
-    (draw-bar "blue")))
+; Grab a random sample of letters from the alphabet, in alphabetical order.
+(.setInterval js/window (fn []
+  (-> alphabet
+    shuffle
+    (subvec (rand-int 26))
+    sort
+    vec
+    update))
+  ; 2 seconds between swaps
+  2000)
