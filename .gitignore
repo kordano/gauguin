@@ -1,7 +1,7 @@
 /target
 /classes
 /checkouts
-/resources/public/js/mainjs
+/resources/public/js
 /out
 .#*
 pom.xml
