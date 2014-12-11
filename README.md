@@ -1,14 +1,20 @@
 # gauguin
 
-A Clojure library designed to ... well, that part is up to you.
+Some experiments with d3 in Clojurescript. Currently only a simple tree visualization is implemented. 
 
 ## Usage
 
-FIXME
+Build Clojurescript
+
+```
+lein cljsbuild once
+```
+
+Open `resources/public/index.html` with a browser of your choice.
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Konrad Kühne
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
