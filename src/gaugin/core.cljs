@@ -1,6 +1,6 @@
 (ns gauguin.core
   (:require [strokes :refer [d3]]
-            [gauguin.data :refer [graph-data-1 graph-data-2 graph-data-3]]
+            [gauguin.data :as data]
             [figwheel.client :as fw]))
 
 (strokes/bootstrap)
@@ -111,7 +111,7 @@
   (let [width 1080
         height 920
         color (-> d3 .-scale .category10)
-        force (-> d3 .-layout .force (.charge -100) (.linkDistance 20) (.size [width height]))
+        force (-> d3 .-layout .force (.charge -200) (.linkDistance 30) (.size [width height]))
         svg (-> d3
                 (.select frame)
                 (.attr {:width width
@@ -133,7 +133,7 @@
                    .enter
                    (.append "circle")
                    (.attr {:class "node"
-                           :r "3"})
+                           :r "4"})
                    (.style {:fill (fn [d] (color (.-group d)))})
                    (.call (.-drag force)))]
       (do
@@ -154,6 +154,6 @@
 
 (draw-reingold tree-data)
 
-(draw-fdg graph-data-1 "#the-canvas-2")
-(draw-fdg graph-data-2 "#the-canvas-3")
-(draw-fdg graph-data-3 "#the-canvas-4")
+(draw-fdg data/graph-data-1 "#the-canvas-2")
+(draw-fdg data/graph-data-2 "#the-canvas-3")
+(draw-fdg data/graph-data-3-b "#the-canvas-4")
