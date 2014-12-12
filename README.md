@@ -1,6 +1,9 @@
 # gauguin
 
-Some experiments with d3 in Clojurescript. Currently only a simple tree visualization is implemented. 
+Some experiments with d3 in Clojurescript.
+Implemented:
+* Reingold-Tilford Tree (http://bl.ocks.org/mbostock/4063550)
+* Force-directed Graph (http://bl.ocks.org/mbostock/4062045)
 
 ## Usage
 
