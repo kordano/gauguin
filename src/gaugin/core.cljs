@@ -1,6 +1,6 @@
 (ns gauguin.core
   (:require [strokes :refer [d3]]
-            [gauguin.data :refer [graph-data-1 graph-data-2]]
+            [gauguin.data :refer [graph-data-1 graph-data-2 graph-data-3]]
             [figwheel.client :as fw]))
 
 (strokes/bootstrap)
@@ -154,4 +154,4 @@
 
 (draw-reingold tree-data)
 
-(draw-fdg graph-data-2)
+(draw-fdg graph-data-3)
