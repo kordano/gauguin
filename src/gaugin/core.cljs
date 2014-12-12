@@ -1,5 +1,6 @@
 (ns gauguin.core
   (:require [strokes :refer [d3]]
+            [gauguin.data :refer [graph-data-1 graph-data-2]]
             [figwheel.client :as fw]))
 
 (strokes/bootstrap)
@@ -7,6 +8,7 @@
 (enable-console-print!)
 
 #_(fw/start {:on-jsload (fn [] (print "reloaded"))})
+
 
 (def tree-data
   (clj->js
@@ -31,11 +33,32 @@
             {:name "p2" :group 1}
             {:name "p3" :group 1}
             {:name "p4" :group 1}
-            {:name "p5" :group 1}]
+            {:name "p5" :group 1}
+            {:name "p6" :group 1}
+            {:name "p7" :group 1}
+            {:name "p8" :group 1}
+            {:name "p9" :group 1}
+            {:name "p10" :group 1}
+            {:name "p11" :group 1}
+            {:name "p12" :group 1}
+            {:name "p13" :group 1}
+            {:name "p14" :group 1}
+            {:name "p15" :group 1}
+            ]
     :links [{:source 1 :target 0 :value 1}
             {:source 2 :target 0 :value 1}
             {:source 3 :target 1 :value 1}
-            {:source 4 :target 1 :value 1}]}))
+            {:source 4 :target 1 :value 1}
+            {:source 5 :target 0 :value 1}
+            {:source 6 :target 0 :value 1}
+            {:source 7 :target 0 :value 1}
+            {:source 8 :target 0 :value 1}
+            {:source 9 :target 0 :value 1}
+            {:source 10 :target 3 :value 1}
+            {:source 11 :target 3 :value 1}
+            {:source 12 :target 0 :value 1}
+            {:source 13 :target 0 :value 5}
+            ]}))
 
 
 (defn draw-reingold
@@ -85,10 +108,10 @@
 (defn draw-fdg
   "Draw force-directed graph"
   [data]
-  (let [width 960
-        height 500
+  (let [width 1080
+        height 920
         color (-> d3 .-scale .category10)
-        force (-> d3 .-layout (.force) (.charge -500) (.linkDistance 100) (.size [width height]))
+        force (-> d3 .-layout .force (.charge -100) (.linkDistance 20) (.size [width height]))
         svg (-> d3
                 (.select "#the-canvas-2")
                 (.attr {:width width
@@ -110,7 +133,7 @@
                    .enter
                    (.append "circle")
                    (.attr {:class "node"
-                           :r "5"})
+                           :r "3"})
                    (.style {:fill (fn [d] (color (.-group d)))})
                    (.call (.-drag force)))]
       (do
@@ -131,4 +154,4 @@
 
 (draw-reingold tree-data)
 
-(draw-fdg graph-data)
+(draw-fdg graph-data-2)
