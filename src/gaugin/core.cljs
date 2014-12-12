@@ -6,25 +6,7 @@
 
 (enable-console-print!)
 
-#_jjjjjjjjjjjjjjjkkkkkkkkk(fw/start {
-  ;; configure a websocket url if yor are using your own server
-  ;; :websocket-url "ws://localhost:3449/figwheel-ws"
-
-  ;; optional callback
-  :on-jsload (fn [] (print "reloaded"))
-
-  ;; The heads up display is enabled by default
-  ;; to disable it:
-  ;; :heads-up-display false
-
-  ;; when the compiler emits warnings figwheel
-  ;; blocks the loading of files.
-  ;; To disable this behavior:
-  ;; :load-warninged-code true
-               })
-
-; 26 characters in a vec
-(def alphabet (vec "abcdefghijklmnopqrstuwvxyz"))
+#_(fw/start {:on-jsload (fn [] (print "reloaded"))})
 
 (def tree-data
   (clj->js
@@ -46,22 +28,23 @@
 (def graph-data
   (clj->js
    {:nodes [{:name "p1" :group 0}
-            {:name "p2" :group 0}
-            {:name "p3" :group 0}
-            {:name "p4" :group 0}
-            {:name "p5" :group 0}]
+            {:name "p2" :group 1}
+            {:name "p3" :group 1}
+            {:name "p4" :group 1}
+            {:name "p5" :group 1}]
     :links [{:source 1 :target 0 :value 1}
             {:source 2 :target 0 :value 1}
             {:source 3 :target 1 :value 1}
             {:source 4 :target 1 :value 1}]}))
 
+
 (defn draw-reingold
-  "doc-string"
+  "Draw tree using Reingold-Tilford Algorithm"
   [data]
   (let [width 1080
         height 920
-        tree (-> d3 .-layout (.tree) (.size [(- height 50) width]))
-        diagonal (-> d3 .-svg .diagonal (.projection (fn [d] (clj->js [(* 0.6 (.-x d)) (* 0.6 (.-y d))]))))
+        tree (-> d3 .-layout .tree (.size [(- height 50) width]))
+        diagonal (-> d3 .-svg .diagonal (.projection #(clj->js [(* 0.6 (.-x %)) (* 0.6 (.-y %))])))
         svg (-> d3 (.select "#the-canvas")
                 (.attr {:width width :height height})
                 (.append "g")
@@ -71,7 +54,7 @@
         link (-> svg
               (.selectAll "path.link")
               (.data links)
-              (.enter)
+              .enter
               (.append "path")
               (.attr {:class "link"
                       :d diagonal}))
@@ -81,7 +64,7 @@
               (.enter)
               (.append "g")
               (.attr {:class "node"
-                      :transform (fn [d] (str "translate(" (* 0.6 (.-x d)) "," (* 0.6 (.-y d)) ")"))}))]
+                      :transform #(str "translate(" (* 0.6 (.-x %)) "," (* 0.6 (.-y %)) ")")}))]
     (do
       (-> node
           (.append "circle")
@@ -117,20 +100,19 @@
     (let [link (-> svg
                    (.selectAll ".link")
                    (.data (.-links data))
-                   (.enter)
+                   .enter
                    (.append "line")
                    (.attr {:class "link"})
                    (.style {:stroke-with (fn [d] (.sqrt js/Math (.-value d)))}))
           node (-> svg
                    (.selectAll ".node")
                    (.data (.-nodes data))
-                   (.enter)
+                   .enter
                    (.append "circle")
                    (.attr {:class "node"
                            :r "5"})
                    (.style {:fill (fn [d] (color (.-group d)))})
-                   (.call (.-drag force))
-                   )]
+                   (.call (.-drag force)))]
       (do
         (-> node (.append "title") (.text (fn [d] (.-name d))))
         (-> force
