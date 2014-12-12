@@ -107,13 +107,13 @@
 
 (defn draw-fdg
   "Draw force-directed graph"
-  [data]
+  [data frame]
   (let [width 1080
         height 920
         color (-> d3 .-scale .category10)
         force (-> d3 .-layout .force (.charge -100) (.linkDistance 20) (.size [width height]))
         svg (-> d3
-                (.select "#the-canvas-2")
+                (.select frame)
                 (.attr {:width width
                         :height height}))]
     (-> force
@@ -154,4 +154,6 @@
 
 (draw-reingold tree-data)
 
-(draw-fdg graph-data-3)
+(draw-fdg graph-data-1 "#the-canvas-2")
+(draw-fdg graph-data-2 "#the-canvas-3")
+(draw-fdg graph-data-3 "#the-canvas-4")
