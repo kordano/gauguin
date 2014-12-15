@@ -14,11 +14,21 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2411"]
                  [org.clojure/core.memoize "0.5.6"] ;; needed for figwheel
-                 [figwheel "0.1.7-SNAPSHOT"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+
+                 ;; backend
+                 [http-kit "2.1.19"]
+                 [ring "1.3.1"]
+                 [com.cemerick/friend "0.2.1"]
+                 [enlive "1.1.5"]
+                 [compojure "1.2.1"]
+
+                 ;; frontend
                  [net.drib/strokes "0.5.1"]]
 
-  :plugins [[lein-cljsbuild "1.0.3"]
-            [lein-figwheel "0.1.7-SNAPSHOT"]]
+  :plugins [[lein-cljsbuild "1.0.3"]]
+
+  :main gauguin.core
 
   :cljsbuild
   {:builds

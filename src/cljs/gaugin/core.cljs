@@ -1,14 +1,10 @@
 (ns gauguin.core
   (:require [strokes :refer [d3]]
-            [gauguin.data :as data]
-            [figwheel.client :as fw]))
+            [gauguin.data :as data]))
 
 (strokes/bootstrap)
 
 (enable-console-print!)
-
-#_(fw/start {:on-jsload (fn [] (print "reloaded"))})
-
 
 (def tree-data
   (clj->js
