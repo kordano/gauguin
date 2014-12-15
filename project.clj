@@ -24,6 +24,7 @@
                  [compojure "1.2.1"]
 
                  ;; frontend
+                 [jarohen/chord "0.4.2"]
                  [net.drib/strokes "0.5.1"]]
 
   :plugins [[lein-cljsbuild "1.0.3"]]

@@ -29,6 +29,7 @@
   (with-channel request channel
     (on-close channel (fn [msg] (println "Channel closed!")))
     (on-receive channel (fn [msg]
+                          (println "Incoming msg:" msg)
                           (read-graph (dispatch-request (read-string msg)))))))
 
 
@@ -45,6 +46,10 @@
 
 
 (comment
+
+  (def stop-server (run-server (site #'handler) {:port 8091 :join? false}))
+
+  (stop-server)
 
   (dispatch-request {:topic :graph :data :graph-3})
 

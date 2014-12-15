@@ -1,10 +1,27 @@
 (ns gauguin.core
   (:require [strokes :refer [d3]]
-            [gauguin.data :as data]))
+            [cljs.core.async :refer [put! chan <! >! alts! timeout close!] :as async]
+            [chord.client :refer [ws-ch]]
+            [gauguin.data :as data])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (strokes/bootstrap)
 
 (enable-console-print!)
+(def uri (goog.Uri. js/location.href))
+
+(def ssl? (= (.getScheme uri) "https"))
+
+(def app-state (atom {:bookmarks []
+                      :user {:email nil :token-status nil}
+                      :ws []}))
+
+(def socket-url (str (if ssl? "wss://" "ws://")
+                     (.getDomain uri)
+                     (when (= (.getDomain uri) "localhost")
+                       (str ":" (.getPort uri)))
+                     "/data/ws"))
+
 
 (def tree-data
   (clj->js
@@ -23,48 +40,15 @@
                {:name "p4"
                 :parent "p1"}]}))
 
-(def graph-data
-  (clj->js
-   {:nodes [{:name "p1" :group 0}
-            {:name "p2" :group 1}
-            {:name "p3" :group 1}
-            {:name "p4" :group 1}
-            {:name "p5" :group 1}
-            {:name "p6" :group 1}
-            {:name "p7" :group 1}
-            {:name "p8" :group 1}
-            {:name "p9" :group 1}
-            {:name "p10" :group 1}
-            {:name "p11" :group 1}
-            {:name "p12" :group 1}
-            {:name "p13" :group 1}
-            {:name "p14" :group 1}
-            {:name "p15" :group 1}
-            ]
-    :links [{:source 1 :target 0 :value 1}
-            {:source 2 :target 0 :value 1}
-            {:source 3 :target 1 :value 1}
-            {:source 4 :target 1 :value 1}
-            {:source 5 :target 0 :value 1}
-            {:source 6 :target 0 :value 1}
-            {:source 7 :target 0 :value 1}
-            {:source 8 :target 0 :value 1}
-            {:source 9 :target 0 :value 1}
-            {:source 10 :target 3 :value 1}
-            {:source 11 :target 3 :value 1}
-            {:source 12 :target 0 :value 1}
-            {:source 13 :target 0 :value 5}
-            ]}))
-
 
 (defn draw-reingold
   "Draw tree using Reingold-Tilford Algorithm"
-  [data]
+  [data frame]
   (let [width 1080
         height 920
         tree (-> d3 .-layout .tree (.size [(- height 50) width]))
         diagonal (-> d3 .-svg .diagonal (.projection #(clj->js [(* 0.6 (.-x %)) (* 0.6 (.-y %))])))
-        svg (-> d3 (.select "#the-canvas")
+        svg (-> d3 (.select frame)
                 (.attr {:width width :height height})
                 (.append "g")
                 (.attr {:transform (str "translate(" (/ width 4) ",20)")}))
@@ -107,7 +91,7 @@
   (let [width 1080
         height 920
         color (-> d3 .-scale .category10)
-        force (-> d3 .-layout .force (.charge -100) (.linkDistance 20) (.size [width height]))
+        force (-> d3 .-layout .force (.charge -100)  (.linkDistance 20) (.size [width height]))
         svg (-> d3
                 (.select frame)
                 (.attr {:width width
@@ -148,8 +132,22 @@
                                :cy #(.-y %)})))))))))
 
 
-(draw-reingold tree-data)
+#_(draw-reingold tree-data "#the-canvas")
 
 (draw-fdg data/graph-data-1 "#the-canvas-2")
 (draw-fdg data/graph-data-2 "#the-canvas-3")
 (draw-fdg data/graph-data-3-b "#the-canvas-4")
+
+
+(defn connect-to-server
+  "Build websocket connection to remote server"
+  [socket-url]
+  (go
+    (let [{:keys [ws-channel error] :as ws-conn} (<! (ws-ch socket-url))]
+      (>! ws-channel {:topic :graph :data :graph-3})
+      (loop [in-msg (<! ws-channel)]
+        (when in-msg
+          (println "incoming message"))))))
+
+
+(connect-to-server "http://localhost:8091/data/ws")
