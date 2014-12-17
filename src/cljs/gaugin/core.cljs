@@ -79,6 +79,13 @@
                    :width (str width "px")})))))
 
 
+(defn clear-canvas [frame]
+  (-> d3
+      (.select frame)
+      (.select "svg")
+      .remove))
+
+
 (defn draw-fdg
   "Draw force-directed graph"
   [data frame]
@@ -112,7 +119,7 @@
                    (.style {:fill (fn [d] (color (.-group d)))})
                    (.call (.-drag force)))]
       (do
-        (-> node (.append "title") (.text (fn [d] (.-name d))))
+        (-> node (.append "title") (.text (fn [d] (.-value d))))
         (-> force
             (.on "tick"
                  (fn []
@@ -163,7 +170,9 @@
               (loop [{msg :message err :error} (<! ws-channel)]
                 (if-not err
                   (do (om/transact! app :graph-data (fn [old] (merge old msg)))
-                      (draw-fdg (-> msg vals first) "#graph-container")
+                      (go
+                        (clear-canvas "#graph-container")
+                        (draw-fdg (-> msg vals first) "#graph-container"))
                       (if-let [new-msg (<! ws-channel)]
                         (recur new-msg)))
                   (println "Error: " (pr-str err)))))
@@ -177,9 +186,3 @@
  force-graph-view
  app-state
  {:target (. js/document (getElementById "graph-container"))})
-
-
-#_(draw-reingold (:reingold-data @app-state) "#reingold-canvas")
-#_(draw-fdg data/graph-data-1 "#graph-container")
-#_(draw-fdg data/graph-data-2 "#graph-container")
-#_(draw-fdg data/graph-data-3-b "#graph-container")
