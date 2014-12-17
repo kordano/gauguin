@@ -115,7 +115,7 @@
                    .enter
                    (.append "circle")
                    (.attr {:class "node"
-                           :r "3"})
+                           :r "4"})
                    (.style {:fill (fn [d] (color (.-group d)))})
                    (.call (.-drag force)))]
       (do
@@ -150,7 +150,7 @@
 (deftemplate graph-header "templates/graph.html"
   [app owner state]
   {[:#container-header] (content (str "Force-based Graph: " (:selected state)))
-   [:#graph-dropdown-menu] (content (map (partial graph-menu-entry owner) (range 10)))})
+   [:#graph-dropdown-menu] (content (map (partial graph-menu-entry owner) (range 50)))})
 
 
 (defn force-graph-view
