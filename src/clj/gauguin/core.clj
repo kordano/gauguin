@@ -4,15 +4,15 @@
             [compojure.route :refer [resources]]
             [compojure.core :refer [GET POST defroutes]]
             [compojure.handler :refer [site api]]
-            [org.httpkit.server :refer [with-channel on-receive on-close run-server]]))
+            [org.httpkit.server :refer [with-channel on-receive on-close run-server send!]]))
 
 
 (defn read-graph
   "Read data from edn file"
   [graph]
   (->> (str "data/" (name graph) ".edn")
-            slurp
-            read-string))
+       slurp
+       read-string))
 
 
 (defn dispatch-request
@@ -29,8 +29,7 @@
   (with-channel request channel
     (on-close channel (fn [msg] (println "Channel closed!")))
     (on-receive channel (fn [msg]
-                          (println "Incoming msg:" msg)
-                          (read-graph (dispatch-request (read-string msg)))))))
+                          (send! channel (pr-str (dispatch-request (read-string msg))))))))
 
 
 (defroutes handler
@@ -50,8 +49,5 @@
   (def stop-server (run-server (site #'handler) {:port 8091 :join? false}))
 
   (stop-server)
-
-  (dispatch-request {:topic :graph :data :graph-3})
-
 
   )
