@@ -2,43 +2,37 @@
   (:require [strokes :refer [d3]]
             [cljs.core.async :refer [put! chan <! >! alts! timeout close!] :as async]
             [chord.client :refer [ws-ch]]
+            [om.core :as om :include-macros true]
+            [kioo.om :refer [content set-attr do-> substitute listen remove-attr add-class remove-class]]
+            [kioo.core :refer [handle-wrapper]]
+            [cljs.reader :refer [read-string] :as read]
             [gauguin.data :as data])
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [kioo.om :refer [defsnippet deftemplate]]))
 
 (strokes/bootstrap)
 
 (enable-console-print!)
-(def uri (goog.Uri. js/location.href))
 
-(def ssl? (= (.getScheme uri) "https"))
-
-(def app-state (atom {:bookmarks []
-                      :user {:email nil :token-status nil}
-                      :ws []}))
-
-(def socket-url (str (if ssl? "wss://" "ws://")
-                     (.getDomain uri)
-                     (when (= (.getDomain uri) "localhost")
-                       (str ":" (.getPort uri)))
-                     "/data/ws"))
-
-
-(def tree-data
-  (clj->js
-   {:name "p1"
-    :parent nil
-    :children [{:name "u1"
-                :parent "p1"}
-               {:name "p2"
-                :parent "p1"
-                :children [{:name "p4"
-                            :parent "p2"}
-                           {:name "p5"
-                            :parent "p5"}]}
-               {:name "p3"
-                :parent "p1"}
-               {:name "p4"
-                :parent "p1"}]}))
+(def app-state
+  (atom
+   {:graph-data []
+    :reingold-data
+    (clj->js
+     {:name "p1"
+      :parent nil
+      :children [{:name "u1"
+                  :parent "p1"}
+                 {:name "p2"
+                  :parent "p1"
+                  :children [{:name "p4"
+                              :parent "p2"}
+                             {:name "p5"
+                              :parent "p5"}]}
+                 {:name "p3"
+                  :parent "p1"}
+                 {:name "p4"
+                  :parent "p1"}]})}))
 
 
 (defn draw-reingold
@@ -94,6 +88,7 @@
         force (-> d3 .-layout .force (.charge -100)  (.linkDistance 20) (.size [width height]))
         svg (-> d3
                 (.select frame)
+                (.append "svg")
                 (.attr {:width width
                         :height height}))]
     (-> force
@@ -132,22 +127,59 @@
                                :cy #(.-y %)})))))))))
 
 
-#_(draw-reingold tree-data "#the-canvas")
+;; --- GRAPH VIEW ---
 
-(draw-fdg data/graph-data-1 "#the-canvas-2")
-(draw-fdg data/graph-data-2 "#the-canvas-3")
-(draw-fdg data/graph-data-3-b "#the-canvas-4")
-
-
-(defn connect-to-server
-  "Build websocket connection to remote server"
-  [socket-url]
-  (go
-    (let [{:keys [ws-channel error] :as ws-conn} (<! (ws-ch socket-url))]
-      (>! ws-channel {:topic :graph :data :graph-3})
-      (loop [in-msg (<! ws-channel)]
-        (when in-msg
-          (println "incoming message"))))))
+(defsnippet graph-menu-entry "templates/graph.html" [:.graph-menu-entry]
+  [owner id]
+  {[:.graph-menu-entry-text] (do->
+                              (content (str "graph-" id))
+                              (listen :on-click
+                                      (fn [e]
+                                        (go
+                                          (>! (om/get-state owner :ws-ch) {:topic :graph :data (keyword (str "graph-" id))})))))})
 
 
-(connect-to-server "http://localhost:8091/data/ws")
+(deftemplate graph-header "templates/graph.html"
+  [app owner]
+  {[:#container-header] (content "Force-based Graph")
+   [:#graph-dropdown-menu] (content (map (partial graph-menu-entry owner) (range 10)))})
+
+
+(defn force-graph-view
+  "Force-based graphs with selection"
+  [app owner]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {:ws-ch nil})
+    om/IWillMount
+    (will-mount [_]
+      (go
+        (let [{:keys [ws-channel error] :as ws-conn} (<! (ws-ch "ws://localhost:8091/data/ws"))]
+          (if-not error
+            (do
+              (om/set-state! owner :ws-ch ws-channel)
+              (>! ws-channel {:topic :graph :data :graph-0})
+              (loop [{msg :message err :error} (<! ws-channel)]
+                (if-not err
+                  (do (om/transact! app :graph-data (fn [old] (merge old msg)))
+                      (draw-fdg (-> msg vals first) "#graph-container")
+                      (if-let [new-msg (<! ws-channel)]
+                        (recur new-msg)))
+                  (println "Error: " (pr-str err)))))
+            (println "Error")))))
+    om/IRender
+    (render [this]
+      (graph-header app owner))))
+
+
+(om/root
+ force-graph-view
+ app-state
+ {:target (. js/document (getElementById "graph-container"))})
+
+
+#_(draw-reingold (:reingold-data @app-state) "#reingold-canvas")
+#_(draw-fdg data/graph-data-1 "#graph-container")
+#_(draw-fdg data/graph-data-2 "#graph-container")
+#_(draw-fdg data/graph-data-3-b "#graph-container")

@@ -10,9 +10,9 @@
 (defn read-graph
   "Read data from edn file"
   [graph]
-  (->> (str "data/" (name graph) ".edn")
-       slurp
-       read-string))
+  {graph (->> (str "data/" (name graph) ".edn")
+         slurp
+         read-string)})
 
 
 (defn dispatch-request

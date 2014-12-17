@@ -18,13 +18,16 @@
 
                  ;; backend
                  [http-kit "2.1.19"]
-                 [ring "1.3.1"]
+                 [ring "1.3.2"]
                  [com.cemerick/friend "0.2.1"]
                  [enlive "1.1.5"]
-                 [compojure "1.2.1"]
+                 [compojure "1.3.1"]
 
                  ;; frontend
                  [jarohen/chord "0.4.2"]
+                 [com.facebook/react "0.12.1"]
+                 [om "0.7.3"]
+                 [kioo "0.4.0"]
                  [net.drib/strokes "0.5.1"]]
 
   :plugins [[lein-cljsbuild "1.0.3"]]
