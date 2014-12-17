@@ -143,12 +143,13 @@
                               (listen :on-click
                                       (fn [e]
                                         (go
-                                          (>! (om/get-state owner :ws-ch) {:topic :graph :data (keyword (str "graph-" id))})))))})
+                                          (>! (om/get-state owner :ws-ch) {:topic :graph :data (keyword (str "graph-" id))})
+                                          (om/set-state! owner :selected id)))))})
 
 
 (deftemplate graph-header "templates/graph.html"
-  [app owner]
-  {[:#container-header] (content "Force-based Graph")
+  [app owner state]
+  {[:#container-header] (content (str "Force-based Graph: " (:selected state)))
    [:#graph-dropdown-menu] (content (map (partial graph-menu-entry owner) (range 10)))})
 
 
@@ -158,7 +159,8 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:ws-ch nil})
+      {:ws-ch nil
+       :selected "0"})
     om/IWillMount
     (will-mount [_]
       (go
@@ -177,9 +179,9 @@
                         (recur new-msg)))
                   (println "Error: " (pr-str err)))))
             (println "Error")))))
-    om/IRender
-    (render [this]
-      (graph-header app owner))))
+    om/IRenderState
+    (render-state [app this]
+      (graph-header app owner this))))
 
 
 (om/root
