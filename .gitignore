@@ -1,6 +1,7 @@
 /target
 /classes
 /checkouts
+/data
 /resources/public/js
 /out
 .#*
