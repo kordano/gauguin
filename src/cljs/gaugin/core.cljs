@@ -91,46 +91,46 @@
   [data frame]
   (let [width 1080
         height 920
-        color (-> d3 .-scale .category10)
-        force (-> d3 .-layout .force (.charge -100)  (.linkDistance 20) (.size [width height]))
-        svg (-> d3
-                (.select frame)
-                (.append "svg")
-                (.attr {:width width
+        color (.. d3 -scale category10)
+        force (.. d3 -layout force (charge -100)  (linkDistance 20) (size [width height]))
+        svg (.. d3
+                (select frame)
+                (append "svg")
+                (attr {:width width
                         :height height}))]
-    (-> force
-        (.nodes (.-nodes data))
-        (.links (.-links data))
-        .start)
-    (let [link (-> svg
-                   (.selectAll ".link")
-                   (.data (.-links data))
-                   .enter
-                   (.append "line")
-                   (.attr {:class "link"})
-                   (.style {:stroke-with (fn [d] (.sqrt js/Math (.-value d)))}))
-          node (-> svg
-                   (.selectAll ".node")
-                   (.data (.-nodes data))
-                   .enter
-                   (.append "circle")
-                   (.attr {:class "node"
+    (.. force
+        (nodes (.-nodes data))
+        (links (.-links data))
+        start)
+    (let [link (.. svg
+                   (selectAll ".link")
+                   (data (.-links data))
+                   enter
+                   (append "line")
+                   (attr {:class "link"})
+                   (style {:stroke-with (fn [d] (.sqrt js/Math (.-value d)))}))
+          node (.. svg
+                   (selectAll ".node")
+                   (data (.-nodes data))
+                   enter
+                   (append "circle")
+                   (attr {:class "node"
                            :r "4"})
-                   (.style {:fill (fn [d] (color (.-group d)))})
-                   (.call (.-drag force)))]
+                   (style {:fill (fn [d] (color (.-group d)))})
+                   (call (.-drag force)))]
       (do
-        (-> node (.append "title") (.text (fn [d] (.-value d))))
-        (-> force
-            (.on "tick"
+        (.. node (append "title") (text (fn [d] (.-value d))))
+        (.. force
+            (on "tick"
                  (fn []
-                   (-> link
-                       (.attr
-                        {:x1 #(-> % .-source .-x)
-                         :y1 #(-> % .-source .-y)
-                         :x2 #(-> % .-target .-x)
-                         :y2 #(-> % .-target .-y)}))
-                   (-> node
-                       (.attr {:cx #(.-x %)
+                   (.. link
+                       (attr
+                        {:x1 #(.. % -source -x)
+                         :y1 #(.. % -source -y)
+                         :x2 #(.. % -target -x)
+                         :y2 #(.. % -target -y)}))
+                   (.. node
+                       (attr {:cx #(.-x %)
                                :cy #(.-y %)})))))))))
 
 
