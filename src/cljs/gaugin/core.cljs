@@ -40,50 +40,51 @@
   [data frame]
   (let [width 1080
         height 920
-        tree (-> d3 .-layout .tree (.size [(- height 50) width]))
-        diagonal (-> d3 .-svg .diagonal (.projection #(clj->js [(* 0.6 (.-x %)) (* 0.6 (.-y %))])))
-        svg (-> d3 (.select frame)
-                (.attr {:width width :height height})
-                (.append "g")
-                (.attr {:transform (str "translate(" (/ width 4) ",20)")}))
+        tree (.. d3 -layout tree (size [(- height 50) width]))
+        diagonal (.. d3 -svg diagonal (projection #(clj->js [(* 0.6 (.-x %)) (* 0.6 (.-y %))])))
+        svg (.. d3
+                (select frame)
+                (attr {:width width :height height})
+                (append "g")
+                (attr {:transform (str "translate(" (/ width 4) ",20)")}))
         nodes (.nodes tree data)
         links (.links tree nodes)
-        link (-> svg
-              (.selectAll "path.link")
-              (.data links)
-              .enter
-              (.append "path")
-              (.attr {:class "link"
+        link (.. svg
+              (selectAll "path.link")
+              (data links)
+              enter
+              (append "path")
+              (attr {:class "link"
                       :d diagonal}))
-        node (-> svg
-              (.selectAll "g.node")
-              (.data nodes)
-              (.enter)
-              (.append "g")
-              (.attr {:class "node"
+        node (.. svg
+              (selectAll "g.node")
+              (data nodes)
+              enter
+              (append "g")
+              (attr {:class "node"
                       :transform #(str "translate(" (* 0.6 (.-x %)) "," (* 0.6 (.-y %)) ")")}))]
     (do
-      (-> node
-          (.append "circle")
-          (.attr {:r 4.5}))
-      (-> node
-          (.append "text")
-          (.attr {:dx 3
+      (.. node
+          (append "circle")
+          (attr {:r 4.5}))
+      (.. node
+          (append "text")
+          (attr {:dx 3
                   :dy #(if (.-children %) -8 8)
                   :text-anchor #(if (.-children %) "end" "start")})
-          (.style {:font-size "10px"})
-          (.text #(.-name %)))
-      (-> d3
-          (.select (.-frameElement js/self))
-          (.style {:height (str (- height 50) "px")
+          (style {:font-size "10px"})
+          (text #(.-name %)))
+      (.. d3
+          (select (.-frameElement js/self))
+          (style {:height (str (- height 50) "px")
                    :width (str width "px")})))))
 
 
 (defn clear-canvas [frame]
-  (-> d3
-      (.select frame)
-      (.select "svg")
-      .remove))
+  (.. d3
+      (select frame)
+      (select "svg")
+      remove))
 
 
 (defn draw-fdg
