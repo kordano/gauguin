@@ -109,7 +109,9 @@
                    enter
                    (append "line")
                    (attr {:class "link"})
-                   (style {:stroke-with (fn [d] (.sqrt js/Math (.-value d)))}))
+                   (style {:stroke-width 1
+                           :stroke "grey"})
+                   )
           node (.. svg
                    (selectAll ".node")
                    (data (.-nodes data))
